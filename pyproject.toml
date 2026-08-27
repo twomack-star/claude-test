@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cpbond"
+version = "0.1.0"
+description = "Bench harness for validating Cradlepoint WAN bonding (R1900 + CBA1250)"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+cpbond = "cpbond.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

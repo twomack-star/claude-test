@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.venv/
+venv/
+
+# Bench session state and generated reports — local to a run, not shared.
+cpbond-session.json
+bonding-results.md
