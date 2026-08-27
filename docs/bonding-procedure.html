@@ -1,0 +1,625 @@
+<title>Dual-SIM Bonding Procedure</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+  :root {
+    --ground:      #f5f7f8;
+    --surface:     #ffffff;
+    --surface-alt: #eef1f3;
+    --ink:         #12181c;
+    --ink-2:       #4d5a61;
+    --ink-3:       #77848b;
+    --rule:        #d8dee1;
+    --rule-strong: #b4bfc4;
+    --accent:      #0b5560;
+    --accent-soft: #e2eef0;
+    --amber:       #8a5200;
+    --amber-soft:  #fbf0dd;
+    --pass:        #1c6440;
+    --pass-soft:   #e3f0e8;
+    --fail:        #97231f;
+    --fail-soft:   #f9e6e4;
+
+    --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+    --body:    "Source Serif 4", Georgia, "Times New Roman", serif;
+    --mono:    "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #0e1316;
+      --surface:     #161d21;
+      --surface-alt: #1d262b;
+      --ink:         #e6ebed;
+      --ink-2:       #a7b4ba;
+      --ink-3:       #7d8b92;
+      --rule:        #2b363c;
+      --rule-strong: #3e4c53;
+      --accent:      #6fc4ce;
+      --accent-soft: #163236;
+      --amber:       #e0a662;
+      --amber-soft:  #2e2415;
+      --pass:        #6cc294;
+      --pass-soft:   #14291d;
+      --fail:        #e8918c;
+      --fail-soft:   #2d1917;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:      #0e1316;
+    --surface:     #161d21;
+    --surface-alt: #1d262b;
+    --ink:         #e6ebed;
+    --ink-2:       #a7b4ba;
+    --ink-3:       #7d8b92;
+    --rule:        #2b363c;
+    --rule-strong: #3e4c53;
+    --accent:      #6fc4ce;
+    --accent-soft: #163236;
+    --amber:       #e0a662;
+    --amber-soft:  #2e2415;
+    --pass:        #6cc294;
+    --pass-soft:   #14291d;
+    --fail:        #e8918c;
+    --fail-soft:   #2d1917;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 17px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 51rem; margin: 0 auto; padding: 3rem 1.5rem 6rem; }
+
+  /* ---- masthead ---- */
+  header.mast { border-bottom: 2px solid var(--ink); padding-bottom: 1.5rem; }
+  .kicker {
+    font-family: var(--display); font-size: .72rem; font-weight: 600;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--accent);
+    margin: 0 0 .75rem;
+  }
+  h1 {
+    font-family: var(--display); font-weight: 700; font-size: clamp(2rem, 5vw, 2.9rem);
+    line-height: 1.08; letter-spacing: -.02em; margin: 0 0 .6rem; text-wrap: balance;
+  }
+  .standfirst {
+    font-size: 1.12rem; color: var(--ink-2); margin: 0; max-width: 40rem;
+  }
+  .meta {
+    display: flex; flex-wrap: wrap; gap: .5rem 1.75rem; margin-top: 1.5rem;
+    font-family: var(--mono); font-size: .78rem; color: var(--ink-3);
+  }
+  .meta b { color: var(--ink-2); font-weight: 500; }
+
+  /* ---- the one big idea ---- */
+  .thesis {
+    margin: 2.5rem 0 0; padding: 1.5rem 1.6rem;
+    background: var(--accent-soft); border-left: 4px solid var(--accent);
+  }
+  .thesis p { margin: 0; }
+  .thesis p + p { margin-top: .8rem; }
+  .thesis strong { font-weight: 600; }
+
+  /* ---- sections ---- */
+  h2 {
+    font-family: var(--display); font-weight: 700; font-size: 1.45rem;
+    letter-spacing: -.01em; margin: 3.5rem 0 .3rem; padding-top: 1.5rem;
+    border-top: 1px solid var(--rule-strong); text-wrap: balance;
+  }
+  .part-note { color: var(--ink-3); font-size: .95rem; margin: 0 0 2rem; font-style: italic; }
+
+  /* ---- steps ---- */
+  .step { display: grid; grid-template-columns: 3rem 1fr; gap: 1.1rem; margin-bottom: 2.5rem; }
+  .num {
+    font-family: var(--display); font-weight: 700; font-size: 1.05rem;
+    color: var(--surface); background: var(--accent);
+    width: 2.35rem; height: 2.35rem; border-radius: 50%;
+    display: grid; place-items: center; font-variant-numeric: tabular-nums;
+  }
+  .step h3 {
+    font-family: var(--display); font-weight: 600; font-size: 1.16rem;
+    margin: .28rem 0 .55rem; line-height: 1.3; text-wrap: balance;
+  }
+  .step p { margin: 0 0 .7rem; }
+  .step > div > *:last-child { margin-bottom: 0; }
+
+  ul.do { list-style: none; padding: 0; margin: 0 0 .9rem; }
+  ul.do li {
+    position: relative; padding-left: 1.6rem; margin-bottom: .45rem;
+  }
+  ul.do li::before {
+    content: ""; position: absolute; left: 0; top: .55em;
+    width: .68rem; height: .68rem; border: 1.5px solid var(--rule-strong);
+    background: var(--surface);
+  }
+
+  code {
+    font-family: var(--mono); font-size: .86em;
+    background: var(--surface-alt); padding: .12em .38em; border-radius: 2px;
+  }
+  pre {
+    font-family: var(--mono); font-size: .82rem; line-height: 1.55;
+    background: var(--surface-alt); color: var(--ink);
+    padding: .95rem 1.1rem; margin: 0 0 .9rem;
+    overflow-x: auto; border-left: 3px solid var(--rule-strong);
+  }
+  pre code { background: none; padding: 0; }
+
+  /* ---- callouts ---- */
+  .call { padding: 1rem 1.2rem; margin: 0 0 .9rem; font-size: .96rem; }
+  .call p { margin: 0; }
+  .call p + p { margin-top: .6rem; }
+  .call .tag {
+    display: block; font-family: var(--display); font-size: .68rem; font-weight: 700;
+    letter-spacing: .13em; text-transform: uppercase; margin-bottom: .4rem;
+  }
+  .why  { background: var(--surface-alt); border-left: 3px solid var(--rule-strong); }
+  .why .tag { color: var(--ink-3); }
+  .stop { background: var(--fail-soft); border-left: 3px solid var(--fail); }
+  .stop .tag { color: var(--fail); }
+  .rec  { background: var(--amber-soft); border-left: 3px solid var(--amber); }
+  .rec .tag { color: var(--amber); }
+
+  /* ---- fill-in fields ---- */
+  .fields { display: grid; gap: .55rem; margin: .8rem 0 0; }
+  .fld {
+    display: grid; grid-template-columns: minmax(9rem, 14rem) 1fr; gap: .8rem;
+    align-items: baseline; font-family: var(--mono); font-size: .82rem;
+  }
+  .fld span { color: var(--ink-2); }
+  .fld i { border-bottom: 1px dotted var(--rule-strong); min-height: 1.5em; font-style: normal; }
+
+  /* ---- tables ---- */
+  .scroll { overflow-x: auto; margin: 0 0 .9rem; }
+  table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+  th, td {
+    text-align: left; padding: .6rem .7rem; border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+  th {
+    font-family: var(--display); font-weight: 600; font-size: .74rem;
+    letter-spacing: .07em; text-transform: uppercase; color: var(--ink-3);
+    border-bottom: 1.5px solid var(--rule-strong); white-space: nowrap;
+  }
+  td.n { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tbody tr:last-child td { border-bottom: none; }
+
+  /* ---- verdict ---- */
+  .verdicts { display: grid; gap: .8rem; margin: 1.2rem 0 0; }
+  .verdict { padding: 1rem 1.2rem; display: grid; gap: .35rem; }
+  .verdict.p { background: var(--pass-soft); border-left: 4px solid var(--pass); }
+  .verdict.f { background: var(--fail-soft); border-left: 4px solid var(--fail); }
+  .verdict b {
+    font-family: var(--display); font-size: .78rem; font-weight: 700;
+    letter-spacing: .12em; text-transform: uppercase;
+  }
+  .verdict.p b { color: var(--pass); }
+  .verdict.f b { color: var(--fail); }
+  .verdict span { font-size: .96rem; }
+
+  footer {
+    margin-top: 4rem; padding-top: 1.5rem; border-top: 2px solid var(--ink);
+    font-size: .88rem; color: var(--ink-3);
+  }
+  footer p { margin: 0 0 .6rem; }
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  @media (max-width: 34rem) {
+    .step { grid-template-columns: 1fr; gap: .4rem; }
+    .fld { grid-template-columns: 1fr; gap: .1rem; }
+  }
+  @media print {
+    body { background: #fff; font-size: 11pt; }
+    .step, .call, table { break-inside: avoid; }
+    h2 { break-after: avoid; }
+  }
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <p class="kicker">Lab procedure · Work in order</p>
+  <h1>Bonding two SIMs into one connection</h1>
+  <p class="standfirst">Cradlepoint R1900 (5G) plus CBA1250 (LTE), two different
+  carriers, combined into a single faster connection — and verified.</p>
+  <div class="meta">
+    <span><b>Hardware</b> R1900 + CBA1250</span>
+    <span><b>Steps</b> 13</span>
+    <span><b>Time</b> ~3 hrs plus licensing</span>
+    <span><b>Print this</b> — there are values to write down</span>
+  </div>
+</header>
+
+<div class="thesis">
+  <p><strong>Read this before step 1.</strong> Two things get confused, and the
+  whole procedure depends on the difference.</p>
+  <p><strong>Load balancing</strong> sends different connections down different
+  links. Ten people browsing get spread across both SIMs. But any single download
+  still rides one SIM, so nothing individual gets faster.</p>
+  <p><strong>Bonding</strong> splits a single connection's packets across both
+  SIMs. That is what makes one download faster than one SIM can manage — and it
+  only works if something out on the internet puts those packets back in order.
+  That something is the NetCloud Service Gateway. <strong>The two devices on your
+  bench cannot bond on their own.</strong></p>
+  <p>So the test that matters is a <strong>single-connection</strong> speed test.
+  Multi-connection speed tests get faster from plain load balancing and will tell
+  you bonding works when it doesn't.</p>
+</div>
+
+<h2>Before you start</h2>
+<p class="part-note">Gather all of this. Missing the last item stops the job at step 8.</p>
+
+<ul class="do">
+  <li>Cradlepoint R1900 with a SIM installed, powered up</li>
+  <li>Cradlepoint CBA1250 with a SIM installed, powered up</li>
+  <li><strong>Two SIMs on two different carriers</strong> — same carrier means one outage takes both links</li>
+  <li>Ethernet cable, CBA1250 to R1900</li>
+  <li>A laptop to test from, and NetCloud Manager login</li>
+  <li>An <code>iperf3</code> server you can reach, or see step 5 for the alternative</li>
+  <li><strong>SD-WAN / Intelligent Bonding licence on the NetCloud account, and a Service Gateway</strong></li>
+</ul>
+
+<div class="call stop">
+  <span class="tag">Check this first</span>
+  <p>Confirm the SD-WAN / Intelligent Bonding entitlement is active on the account
+  <em>and</em> applied to this device group. Ask your Cradlepoint rep — don't
+  assume. When it's missing, the overlay still comes up and quietly behaves as
+  load balancing, and you can lose a day to chasing MTU settings that were never
+  the problem.</p>
+</div>
+
+<h2>Part A · Wire it up</h2>
+<p class="part-note">Goal: the R1900 sees two working WAN connections.</p>
+
+<div class="step">
+  <div class="num">1</div>
+  <div>
+    <h3>Bring up both modems and record what they're on</h3>
+    <ul class="do">
+      <li>Confirm both devices show connected in NetCloud Manager</li>
+      <li>Open each device's modem status and note carrier, signal, and band</li>
+    </ul>
+    <div class="call why">
+      <span class="tag">Why</span>
+      <p>Once the Ethernet cable is in, the R1900 can't see anything about the
+      CBA1250's cellular side — that WAN just looks like an Ethernet port. If
+      throughput disappoints later, this is the only record of whether the LTE
+      link had decent signal to begin with.</p>
+    </div>
+    <div class="fields">
+      <div class="fld"><span>R1900 — carrier</span><i></i></div>
+      <div class="fld"><span>R1900 — signal / band</span><i></i></div>
+      <div class="fld"><span>CBA1250 — carrier</span><i></i></div>
+      <div class="fld"><span>CBA1250 — signal / band</span><i></i></div>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="num">2</div>
+  <div>
+    <h3>Set the CBA1250 to IP passthrough</h3>
+    <ul class="do">
+      <li>In the CBA1250's settings, switch from router mode to IP passthrough</li>
+      <li>Confirm it hands its carrier address through rather than its own
+      <code>192.168.x.x</code></li>
+    </ul>
+    <div class="call why">
+      <span class="tag">Why</span>
+      <p>Bonding decides how to split traffic by watching each link's delay and
+      packet loss. Router mode adds a second layer of address translation with its
+      own buffering, which muddies those readings.</p>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="num">3</div>
+  <div>
+    <h3>Cable them together and make the port a WAN</h3>
+    <ul class="do">
+      <li>CBA1250's LAN port to an Ethernet port on the R1900</li>
+      <li>On the R1900, set that port's role to <strong>WAN</strong>, not LAN</li>
+      <li>Confirm the R1900 now lists <strong>two</strong> connected WANs: the internal
+      5G modem and the Ethernet</li>
+      <li>Confirm the Ethernet WAN shows a carrier address, not <code>192.168.x.x</code>
+      — if it doesn't, step 2 didn't take</li>
+    </ul>
+  </div>
+</div>
+
+<h2>Part B · Make failure detectable</h2>
+<p class="part-note">Goal: the R1900 can tell when the CBA1250's cellular side dies. Don't skip this one.</p>
+
+<div class="step">
+  <div class="num">4</div>
+  <div>
+    <h3>Turn on active connection monitoring for both WANs</h3>
+    <ul class="do">
+      <li>Enable an active probe (ping or DNS) on the Ethernet WAN</li>
+      <li>Enable an active probe on the internal 5G WAN</li>
+      <li>Point each at something out on the internet — <em>not</em> the CBA1250, not the R1900</li>
+      <li>Use a <strong>different target for each WAN</strong></li>
+    </ul>
+    <div class="call why">
+      <span class="tag">Why this is the one people regret skipping</span>
+      <p>The Ethernet cable stays electrically connected even when the CBA1250's
+      <em>cellular</em> connection drops. Without a probe out to the internet, the
+      R1900 believes that WAN is healthy and keeps feeding it traffic that goes
+      nowhere. Under bonding this is worse than losing a link outright: the
+      gateway sits waiting for packets that will never arrive, and the whole
+      combined connection stalls rather than just getting slower.</p>
+      <p>Two different targets, because if both WANs probe the same address and
+      that address goes down, both links fail at once.</p>
+    </div>
+    <p><strong>Prove it works:</strong> pull the SIM from the CBA1250 while
+    something is downloading. Traffic should shift to 5G, and NetCloud should mark
+    the Ethernet WAN <em>failed</em>. If it still reads connected, the probe isn't
+    doing its job — fix that before going on.</p>
+    <div class="fields">
+      <div class="fld"><span>5G probe target</span><i></i></div>
+      <div class="fld"><span>Ethernet probe target</span><i></i></div>
+      <div class="fld"><span>SIM-pull test result</span><i></i></div>
+    </div>
+  </div>
+</div>
+
+<h2>Part C · Record the before picture</h2>
+<p class="part-note">Goal: know each link's speed on its own. These numbers cannot be taken later — once bonding is on, there is no way back to a single link without undoing the build.</p>
+
+<div class="step">
+  <div class="num">5</div>
+  <div>
+    <h3>Speed test the 5G link on its own</h3>
+    <ul class="do">
+      <li>On the R1900, <strong>disable</strong> the Ethernet WAN — actually disable it,
+      don't just move it lower in priority</li>
+      <li>Confirm only one WAN is active</li>
+      <li>Run a single-connection speed test and write the number down</li>
+    </ul>
+    <pre><code>iperf3 -c &lt;your-server&gt; -t 60 -P 1      # upload
+iperf3 -c &lt;your-server&gt; -t 60 -P 1 -R   # download</code></pre>
+    <div class="call rec">
+      <span class="tag">No iperf3 server? Read this</span>
+      <p>Download one large file over HTTPS from a fast host and watch the
+      sustained rate. That is a single connection, which is what we need.</p>
+      <p><strong>Don't use a browser speed-test site for this number.</strong>
+      Those open many connections at once — which is exactly the thing that looks
+      fast under load balancing and hides whether bonding is working. If you run
+      one anyway, keep it in a separate column and don't base the pass/fail on it.</p>
+    </div>
+    <div class="fields">
+      <div class="fld"><span>5G — single conn. down</span><i></i></div>
+      <div class="fld"><span>5G — single conn. up</span><i></i></div>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="num">6</div>
+  <div>
+    <h3>Speed test the LTE link on its own</h3>
+    <ul class="do">
+      <li>Re-enable the Ethernet WAN, then <strong>disable</strong> the internal 5G modem</li>
+      <li>Confirm only one WAN is active</li>
+      <li>Same single-connection test, same server, same duration</li>
+    </ul>
+    <div class="fields">
+      <div class="fld"><span>LTE — single conn. down</span><i></i></div>
+      <div class="fld"><span>LTE — single conn. up</span><i></i></div>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="num">7</div>
+  <div>
+    <h3>Work out your two target numbers</h3>
+    <p>Add the two links together, and note which one is faster. Everything in
+    Part E is judged against these.</p>
+    <div class="fields">
+      <div class="fld"><span>Sum of both (goal)</span><i></i></div>
+      <div class="fld"><span>Faster link alone (must beat)</span><i></i></div>
+    </div>
+    <div class="call why">
+      <span class="tag">What to expect later</span>
+      <p>A working bond lands at roughly <strong>80–90% of the sum</strong>, not
+      100%. Wrapping packets for the tunnel and putting them back in order costs
+      something. Don't treat anything under 100% as broken.</p>
+    </div>
+  </div>
+</div>
+
+<h2>Part D · Turn on bonding</h2>
+<p class="part-note">Goal: both links joined into one interface, splitting single connections across both.</p>
+
+<div class="step">
+  <div class="num">8</div>
+  <div>
+    <h3>Confirm the licence and stand up the Service Gateway</h3>
+    <ul class="do">
+      <li>SD-WAN / Intelligent Bonding entitlement active <em>and</em> applied to this device group</li>
+      <li>Service Gateway deployed — Ericsson-hosted, or your own virtual instance</li>
+      <li>Gateway's own connection sized <strong>above</strong> your step 7 sum, with room spare</li>
+      <li>Gateway reachable from both carriers</li>
+    </ul>
+    <div class="call stop">
+      <span class="tag">Stop here if the licence isn't confirmed</span>
+      <p>Everything past this point needs it. Without it you will build something
+      that comes up, looks right, and only load balances.</p>
+    </div>
+    <div class="call why">
+      <span class="tag">Why the gateway sizing matters</span>
+      <p>All bonded traffic travels through the gateway. Size it exactly at your
+      sum and the gateway becomes the new speed limit — you'd have moved the
+      bottleneck rather than removed it.</p>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="num">9</div>
+  <div>
+    <h3>Re-enable both WANs and build the overlay</h3>
+    <ul class="do">
+      <li>Turn both WANs back on; confirm both connected</li>
+      <li>Build the SD-WAN overlay from the R1900 to the Service Gateway</li>
+      <li>Confirm the R1900 shows the overlay up before continuing</li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="num">10</div>
+  <div>
+    <h3>Create the bonded interface — set it to aggregation</h3>
+    <ul class="do">
+      <li>Create a bonded WAN interface</li>
+      <li>Add <strong>both</strong> members: the internal 5G modem and the Ethernet WAN</li>
+      <li>Set the policy to <strong>bandwidth aggregation</strong> as the default for all traffic</li>
+      <li>Confirm both members show active in the bonded interface</li>
+    </ul>
+    <div class="call why">
+      <span class="tag">The setting that decides the whole job</span>
+      <p>There are other policies available. <strong>Balancing</strong> spreads
+      whole connections and will not make a single download faster.
+      <strong>Duplication</strong> sends every packet down both links — useful for
+      something that must never drop, but it doubles the data you pay for and
+      makes nothing faster. For one fast connection, you want aggregation.</p>
+    </div>
+  </div>
+</div>
+
+<h2>Part E · Prove it works</h2>
+<p class="part-note">Goal: a single connection that beats the faster SIM on its own. This is the sign-off.</p>
+
+<div class="step">
+  <div class="num">11</div>
+  <div>
+    <h3>Run the same speed test with both links up</h3>
+    <ul class="do">
+      <li>Both WANs enabled, bonded interface up, both members active</li>
+      <li>Test from a device behind the R1900</li>
+      <li>Same server, same duration, single connection</li>
+    </ul>
+    <div class="fields">
+      <div class="fld"><span>Bonded — single conn. down</span><i></i></div>
+      <div class="fld"><span>Bonded — single conn. up</span><i></i></div>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="num">12</div>
+  <div>
+    <h3>Compare against step 7 and call it</h3>
+    <div class="verdicts">
+      <div class="verdict p">
+        <b>Working</b>
+        <span>The single-connection result is clearly above the faster link alone
+        — roughly 15% or more. Only real bonding can do that. Expect 80–90% of the
+        sum.</span>
+      </div>
+      <div class="verdict f">
+        <b>Not working</b>
+        <span>The single-connection result is about the same as the faster link
+        alone. Both links may well be carrying traffic, but single connections
+        aren't being split. That's load balancing. Go to the table below.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="num">13</div>
+  <div>
+    <h3>Test what happens when a link drops</h3>
+    <ul class="do">
+      <li>Start a long download, then disable one member</li>
+      <li>It should slow down and keep going, not stop</li>
+      <li>Repeat for the other member; re-enable both when done</li>
+    </ul>
+    <div class="fields">
+      <div class="fld"><span>5G disabled — result</span><i></i></div>
+      <div class="fld"><span>LTE disabled — result</span><i></i></div>
+    </div>
+  </div>
+</div>
+
+<h2>If step 12 failed</h2>
+<p class="part-note">Work down the list. It's ordered by how often each one turns out to be the cause.</p>
+
+<div class="scroll">
+<table>
+  <thead>
+    <tr><th>#</th><th>Check</th><th>What you're looking for</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="n">1</td><td>Licence applied to <em>this</em> group</td>
+        <td>Active on the account isn't enough. Not applied here means the overlay comes up and load balances — the commonest cause by a distance.</td></tr>
+    <tr><td class="n">2</td><td>Policy is aggregation</td>
+        <td>Balancing is often the default. It will never raise single-connection speed.</td></tr>
+    <tr><td class="n">3</td><td>Both members really in the interface</td>
+        <td>Easy to add one and miss the second. Check the WAN device names, not just the count.</td></tr>
+    <tr><td class="n">4</td><td>MTU and MSS</td>
+        <td>Symptom is odd: most things work, some transfers stall. If large packets are being dropped the bond can't fill both links.</td></tr>
+    <tr><td class="n">5</td><td>One member marked unhealthy</td>
+        <td>Check per-link status <em>at the gateway</em>, not just on the router. An excluded member means you're on one link.</td></tr>
+    <tr><td class="n">6</td><td>Router's encrypted throughput rating</td>
+        <td>A router's plain rating is higher than its rating with encryption on. If your step 7 sum is above the R1900's encrypted rating, the router is the ceiling and no setting changes it.</td></tr>
+    <tr><td class="n">7</td><td>Your test server</td>
+        <td>A server slower than the two links combined caps every result and looks exactly like a failed bond.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>Two things to know before quoting a number</h2>
+
+<div class="call why">
+  <span class="tag">Latency goes up, not down</span>
+  <p>Bonded traffic detours through the Service Gateway, and packets wait briefly
+  to be put back in order. That's the cost of bonding. Anything that cares more
+  about responsiveness than speed — voice, remote desktop, gaming — may be better
+  off not bonded.</p>
+</div>
+
+<div class="call why">
+  <span class="tag">The number moves through the day</span>
+  <p>The two carriers get busy independently. Re-run steps 11 and 12 at a
+  different time of day before treating any figure as the spec.</p>
+</div>
+
+<h2>Sign-off</h2>
+<div class="fields">
+  <div class="fld"><span>Performed by</span><i></i></div>
+  <div class="fld"><span>Date</span><i></i></div>
+  <div class="fld"><span>Faster link alone</span><i></i></div>
+  <div class="fld"><span>Bonded, single conn.</span><i></i></div>
+  <div class="fld"><span>% of combined total</span><i></i></div>
+  <div class="fld"><span>Verdict (working / not)</span><i></i></div>
+  <div class="fld"><span>Notes</span><i></i></div>
+</div>
+
+<footer>
+  <p><strong>One caveat on this document.</strong> The Cradlepoint settings are
+  described by what they do rather than by exact menu path — the vendor
+  documentation site was unreachable when this was written, so names in NetCloud
+  Manager may read slightly differently. The sequence and the reasoning hold.</p>
+  <p>Vendor references worth having open at step 10:
+  <a href="https://docs.cradlepoint.com/r/Configuring-NetCloud-Exchange-SD-WAN/Creating-a-Bonded-WAN-Interface">Creating a Bonded WAN Interface</a>
+  and the
+  <a href="https://docs.cradlepoint.com/r/NetCloud-Validated-Design-for-Mobile-Using-Intelligent-Bonding-for-Resiliency/NCX-Service-Gateway-Configuration">Validated Design for Mobile Using Intelligent Bonding</a>.</p>
+</footer>
+
+</div>
