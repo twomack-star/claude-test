@@ -197,6 +197,197 @@ Peplink SpeedFusion with a FusionHub headend, Bondix, Viprinet.
 
 ---
 
-## Phase 2 — Build
+## Phase 2 — Build: NetCloud Exchange SD-WAN (selected)
 
-Filled in once Phase 1 is decided.
+Deployment target: both devices in a case, serving Wi-Fi clients, goal is to make
+use of the combined speed of the two carriers.
+
+> **Read this vendor doc first.** Cradlepoint publishes a validated design for
+> exactly this shape of deployment:
+> [NetCloud Validated Design for Mobile Using Intelligent Bonding for Resiliency](https://docs.cradlepoint.com/r/NetCloud-Validated-Design-for-Mobile-Using-Intelligent-Bonding-for-Resiliency/NCX-Service-Gateway-Configuration).
+> Also: [Intelligent Bonding Overview](https://docs.cradlepoint.com/r/Configuring-NetCloud-Exchange-SD-WAN/Intelligent-Bonding-Overview),
+> [Creating a Bonded WAN Interface](https://docs.cradlepoint.com/r/Configuring-NetCloud-Exchange-SD-WAN/Creating-a-Bonded-WAN-Interface),
+> [Deploying the NCX Service Gateway](https://docs.cradlepoint.com/r/Configuring-NetCloud-Exchange-SD-WAN/Deploying-the-NetCloud-Exchange-Service-Gateway).
+> Exact field names below are described by intent, not transcribed — confirm them
+> against those pages.
+
+### 2.1 Read the bottleneck before you build
+
+For a Wi-Fi-served case, the bonded WAN is unlikely to be the narrowest point.
+The chain is:
+
+```
+Wi-Fi client ← Wi-Fi radio ← R1900 forwarding+crypto ← bonded overlay ← 2 carriers
+```
+
+Delivered speed is the **minimum** of those, so identify which one binds before
+spending effort on the WAN end:
+
+- **Wi-Fi radio.** Airtime is shared across all clients, and a distant slow client
+  consumes disproportionate airtime (rate anomaly), dragging down everyone. The
+  R1900's radio is a router's radio, not a capacity AP. If the case has to serve
+  more than a handful of users at speed, an external AP on the LAN will
+  out-perform the built-in radio by a wide margin. Measure client-to-router
+  throughput over Wi-Fi *first* — if that caps below the sum of your two links,
+  bonding buys the clients nothing.
+- **R1900 forwarding with crypto on.** Overlay traffic is encapsulated and
+  encrypted, and bonding adds sequencing and resequencing work. A router's rated
+  plaintext throughput is not its rated IPsec/SD-WAN throughput. Confirm the
+  R1900's rated encrypted throughput against your expected aggregate; if the
+  carriers can sum above it, the router is your ceiling and no bonding policy
+  changes that.
+- **The Service Gateway.** See 2.3 — its uplink and sizing cap the whole site.
+
+Record the Wi-Fi and router-crypto numbers next to the Phase 0.7 link baselines.
+Whichever is lowest is the thing to fix.
+
+### 2.2 What bonding does and doesn't add for many Wi-Fi clients
+
+Worth being precise, because it changes what to configure:
+
+- Many clients each running their own sessions is the **many-flows** case.
+  Per-flow load balancing (Phase 0, no license) already sums the two carriers
+  across that population. If you speed-test from one laptop and see only one
+  link's worth, that's the *single-flow* cap — not evidence that the site
+  aggregate is limited.
+- **Bandwidth aggregation** earns its place where one client's single flow needs
+  more than one modem: a large upload, a video contribution feed, a big download.
+  In a mixed Wi-Fi crowd, that's some traffic, not all of it.
+- The genuine wins for a *mobile* case beyond raw sum: sessions survive a link
+  dropping instead of resetting, and steering decisions use overlay-wide
+  visibility rather than the router guessing locally. In a case that moves through
+  varying coverage, that resilience is often worth more than the extra megabits.
+
+**Do not apply flow duplication to general Wi-Fi traffic.** It sends every packet
+down both links — double the data bill for the whole user population. Reserve it
+for a small, explicitly-matched critical class, if anything.
+
+### 2.3 Service Gateway placement and sizing
+
+Bonded traffic must hairpin through the gateway. Three consequences:
+
+- **Latency.** Every Wi-Fi user's traffic egresses at the gateway, not locally. A
+  distant gateway adds RTT to everything, including traffic that had no reason to
+  be bonded. If the case will be geographically far from the gateway, measure the
+  added RTT before committing.
+- **Capacity.** The gateway's uplink and instance sizing cap your aggregate. Size
+  it above the sum of both carriers plus headroom, not at it.
+- **Egress identity.** All client traffic appears to come from the gateway. That
+  is usually a feature (a stable address despite CGNAT on both carriers), but
+  check nothing downstream depends on a carrier-local address or geolocation.
+
+Choose deployment: Ericsson's cloud-hosted gateway, or a self-hosted virtual
+instance in your own compute. Self-hosting gets you placement control and
+possibly lower latency; it also makes gateway uptime your problem.
+
+- [ ] SD-WAN / Intelligent Bonding entitlement confirmed on the NetCloud account
+      (verify with your Cradlepoint rep — this is licensed and is the most common
+      thing to discover missing on build day)
+- [ ] Gateway deployment model chosen and sized above expected aggregate
+- [ ] Gateway reachable from both carriers; added RTT measured and acceptable
+
+### 2.4 Bonded interface and policy
+
+1. Register both devices in NetCloud Manager, in a group whose config you control.
+2. Build the overlay from the R1900 to the gateway.
+3. Create the **bonded WAN interface** over the two WAN devices — the internal 5G
+   modem and the Ethernet WAN fed by the CBA1250.
+4. Set per-class policy. A sane starting point for this deployment:
+
+   | Traffic class | Mode | Why |
+   |---|---|---|
+   | Bulk / large transfers | Aggregation | The case that actually needs one fat pipe |
+   | General Wi-Fi client traffic | Balancing | Sums across many flows without duplication cost |
+   | Small critical (mgmt, telemetry) | Duplication | Only if something truly cannot drop |
+   | Everything else | Balancing | Default |
+
+5. Confirm which link is preferred when only one is healthy, and that the overlay
+   degrades to single-link rather than failing closed.
+
+- [ ] Bonded interface up, both members active
+- [ ] Policy classes defined; duplication scoped narrowly or not used
+- [ ] Single-link degradation tested by disabling each member in turn
+
+### 2.5 Cost controls
+
+Wi-Fi users on metered cellular will consume whatever you give them. Aggregation
+doesn't multiply per-byte cost, but it does raise the ceiling on how fast the plan
+drains.
+
+- [ ] Per-client rate limits or QoS on the Wi-Fi side
+- [ ] NetCloud data-usage alerts set per device, per carrier
+- [ ] Someone owns the monthly bill review
+
+---
+
+## Phase 3 — The case build (RF, thermal, power)
+
+This phase decides whether the combined speed is achievable at all. Two cellular
+radios and a Wi-Fi radio inside one enclosure is an RF-engineering problem, and
+getting it wrong costs more throughput than any bonding policy can recover.
+
+### 3.1 Antennas — the highest-risk item
+
+- **Internal/paddle antennas inside the case will not work.** A metal case is a
+  Faraday cage; even plastic attenuates and detunes an antenna pressed against it.
+  Plan on **external antennas mounted through the case wall** from the start.
+- **MIMO needs spatial diversity.** The throughput that makes "combined speed"
+  possible comes from multiple spatial streams. Antennas bunched together
+  collapse MIMO rank and you lose multi-stream gain — undermining the exact goal.
+  Separate the elements as much as the enclosure allows, and use cross-polarized
+  elements where available.
+- **Isolate the two cellular radios from each other.** The R1900 transmitting
+  raises the noise floor at the CBA1250's receiver and vice versa (desense).
+  Different carriers helps but does not guarantee band separation. Maximize
+  physical separation between the two devices' antenna sets — as a rule of thumb
+  aim for at least a half wavelength (~15 cm around 1 GHz, and more is better),
+  and cross-polarize.
+- **Keep Wi-Fi antennas away from cellular.** 2.4 GHz Wi-Fi sits close to LTE
+  bands in the 2.3–2.7 GHz range, and 5 GHz to LAA/B46. This is a real
+  coexistence problem in a shared enclosure, not a theoretical one.
+- Practical answer for most case builds: a purpose-built external MIMO
+  dome/puck antenna (5-in-1 or 7-in-1) per device, or discrete external antennas
+  with maximum achievable separation.
+
+### 3.2 Thermal
+
+Two cellular radios at sustained high transmit power, plus a router SoC doing
+encryption for a bonded overlay, inside a closed box. Modems throttle when hot,
+and they throttle precisely when you are using them hard.
+
+**Test method matters:** run sustained load for 30–60 minutes with the case
+*closed*, and record throughput over time. A cold-start burst number proves
+nothing. Throughput that decays over the first half hour is thermal, and it is the
+most common way a case build passes on the bench and fails in the field.
+
+- [ ] Ventilation, vents, or active airflow provided
+- [ ] Sustained-load test run with the case closed; throughput-over-time recorded
+- [ ] Ambient worst case considered (a closed case in sun is not room temperature)
+
+### 3.3 Power
+
+- [ ] Combined draw budgeted for both devices at **peak** cellular transmit, not idle
+- [ ] Inrush handled at power-on
+- [ ] If battery: runtime calculated at full transmit on both radios
+
+---
+
+## Phase 4 — Validation
+
+Prove the combined speed reaches a Wi-Fi client, which is the actual requirement.
+
+```bash
+# From a Wi-Fi client, not from a wired LAN port.
+iperf3 -c <server> -t 60 -P 1      # single flow — vs. Phase 0.7 single-link baseline
+iperf3 -c <server> -t 60 -P 8      # many flows — the many-client proxy
+iperf3 -c <server> -t 60 -P 1 -R   # downlink
+```
+
+- [ ] Single-flow throughput from a Wi-Fi client **exceeds the better single link**
+      — this is the only proof that aggregation is real and reaching the client
+- [ ] Multi-flow throughput approaches the sum, minus 10–20% encapsulation overhead
+- [ ] Wi-Fi-only throughput measured separately, to confirm Wi-Fi isn't the cap
+- [ ] Sustained 30–60 min run, case closed, no thermal decay
+- [ ] Each link disabled in turn: flows survive, throughput degrades gracefully
+- [ ] Added RTT through the gateway measured and acceptable
+- [ ] Repeated at two times of day (carriers congest independently)
