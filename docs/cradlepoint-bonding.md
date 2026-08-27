@@ -178,8 +178,22 @@ modem terminates on its own carrier and hands the result to the R1900 as an
 ordinary Ethernet WAN. So you have two genuinely independent WAN devices on the
 R1900, which is the precondition for anything in this document.
 
-Confirm the two SIMs are on **different carriers**. Two SIMs on one carrier gives
-you two links and one failure domain, which is the expensive way to get nothing.
+The two SIMs are on **different carriers** (confirmed on the lab pair). This is
+the whole point of the second link — two SIMs on one carrier would give you two
+links and one failure domain, which is the expensive way to get nothing.
+
+Carrier diversity has two consequences that shape the config:
+
+- **Throughput ratios drift.** The two carriers congest independently and at
+  different times of day. A rate-based load-balance ratio configured once against
+  a quiet-afternoon baseline will be wrong by evening. Prefer a mode that measures
+  continuously over one with hand-entered weights, and take baselines at more than
+  one time of day before trusting any number.
+- **Expect CGNAT on both.** Neither link is likely to give you a reachable public
+  address, so any headend must be reached by **outbound-initiated** tunnels from
+  the CPE. Every option in §5 works this way, so it isn't a blocker — but it does
+  rule out inbound-only designs, and it means you can't port-forward to the site
+  from either carrier without a separate static-IP plan or the overlay.
 
 ### Configuration order
 
