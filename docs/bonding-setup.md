@@ -7,6 +7,11 @@ Carrier B). Both up.
 
 **Path:** Cradlepoint NetCloud Exchange SD-WAN, Intelligent Bonding.
 
+**Client side is irrelevant to this build.** Bonding happens on the WAN side of
+the R1900, so whether you connect over Wi-Fi or a LAN port on a given day changes
+nothing here — the bonded interface presents one connection to everything behind
+the router either way.
+
 > Exact NCM field names below are described by intent rather than transcribed —
 > Cradlepoint's docs domain is unreachable from the environment this was written
 > in. Confirm against:
